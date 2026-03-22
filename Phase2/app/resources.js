@@ -77,26 +77,15 @@ function getField(id) {
 }
 
 function cleanText(value) {
-  return value.trim().replace(/\s+/g, " ");
-}
-
-function isAllowedText(value, min, max) {
-  const cleaned = cleanText(value);
-  const allowedPattern = /^[a-zA-Z0-9äöåÄÖÅ ]+$/;
-
-  return (
-    cleaned.length >= min &&
-    cleaned.length <= max &&
-    allowedPattern.test(cleaned)
-  );
+  return (value ?? "").trim().replace(/\s+/g, " ");
 }
 
 function isNameValid(value) {
-  return isAllowedText(value, 5, 30);
+  return cleanText(value).length > 0;
 }
 
 function isDescriptionValid(value) {
-  return isAllowedText(value, 10, 50);
+  return cleanText(value).length > 0;
 }
 
 function isAvailabilityValid(value) {
@@ -173,41 +162,23 @@ function setFeedback(inputId, message, isValid) {
   }`;
 }
 
+function clearFeedback(inputId) {
+  const feedback = getOrCreateFeedbackElement(inputId);
+  if (!feedback) return;
+  feedback.textContent = "";
+  feedback.className = "mt-1 text-sm";
+}
+
 function validateName(showFeedback = true) {
   const input = getField("resourceName");
   if (!input) return false;
 
-  const rawValue = input.value ?? "";
-  const cleaned = cleanText(rawValue);
+  const cleaned = cleanText(input.value);
 
   if (cleaned === "") {
     setInputVisualState(input, "invalid");
     if (showFeedback) {
       setFeedback("resourceName", "Resource name is required.", false);
-    }
-    return false;
-  }
-
-  if (!/^[a-zA-Z0-9äöåÄÖÅ ]+$/.test(cleaned)) {
-    setInputVisualState(input, "invalid");
-    if (showFeedback) {
-      setFeedback(
-        "resourceName",
-        "Use only letters, numbers, and spaces.",
-        false
-      );
-    }
-    return false;
-  }
-
-  if (cleaned.length < 5 || cleaned.length > 30) {
-    setInputVisualState(input, "invalid");
-    if (showFeedback) {
-      setFeedback(
-        "resourceName",
-        "Resource name must be 5–30 characters long.",
-        false
-      );
     }
     return false;
   }
@@ -223,37 +194,12 @@ function validateDescription(showFeedback = true) {
   const input = getField("resourceDescription");
   if (!input) return false;
 
-  const rawValue = input.value ?? "";
-  const cleaned = cleanText(rawValue);
+  const cleaned = cleanText(input.value);
 
   if (cleaned === "") {
     setInputVisualState(input, "invalid");
     if (showFeedback) {
       setFeedback("resourceDescription", "Resource description is required.", false);
-    }
-    return false;
-  }
-
-  if (!/^[a-zA-Z0-9äöåÄÖÅ ]+$/.test(cleaned)) {
-    setInputVisualState(input, "invalid");
-    if (showFeedback) {
-      setFeedback(
-        "resourceDescription",
-        "Use only letters, numbers, and spaces.",
-        false
-      );
-    }
-    return false;
-  }
-
-  if (cleaned.length < 10 || cleaned.length > 50) {
-    setInputVisualState(input, "invalid");
-    if (showFeedback) {
-      setFeedback(
-        "resourceDescription",
-        "Resource description must be 10–50 characters long.",
-        false
-      );
     }
     return false;
   }
@@ -265,43 +211,93 @@ function validateDescription(showFeedback = true) {
   return true;
 }
 
-function validateForm() {
-  const nameValid = validateName(true);
-  const descriptionValid = validateDescription(true);
+function validateOptionalField(input, valid, message) {
+  if (!input) return true;
 
+  if (input.value === "") {
+    setInputVisualState(input, "");
+    return true;
+  }
+
+  if (valid) {
+    setInputVisualState(input, "valid");
+    return true;
+  }
+
+  setInputVisualState(input, "invalid");
+  return false;
+}
+
+function validateForm(showFeedback = true) {
+  const nameInput = getField("resourceName");
+  const descriptionInput = getField("resourceDescription");
   const availableInput = getField("resourceAvailable");
   const priceInput = getField("resourcePrice");
   const priceUnitInput = getField("resourcePriceUnit");
+
+  const nameHasValue = cleanText(nameInput?.value ?? "") !== "";
+  const descriptionHasValue = cleanText(descriptionInput?.value ?? "") !== "";
+
+  const nameValid = showFeedback || nameHasValue ? validateName(showFeedback) : false;
+  const descriptionValid =
+    showFeedback || descriptionHasValue ? validateDescription(showFeedback) : false;
+
+  if (!showFeedback && !nameHasValue && nameInput) {
+    setInputVisualState(nameInput, "");
+    clearFeedback("resourceName");
+  }
+
+  if (!showFeedback && !descriptionHasValue && descriptionInput) {
+    setInputVisualState(descriptionInput, "");
+    clearFeedback("resourceDescription");
+  }
 
   const availableValid = isAvailabilityValid(availableInput?.value ?? "");
   const priceValid = isPriceValid(priceInput?.value ?? "");
   const priceUnitValid = isPriceUnitValid(priceUnitInput?.value ?? "");
 
-  const allValid = nameValid && descriptionValid && availableValid && priceValid && priceUnitValid;
+  validateOptionalField(availableInput, availableValid);
+  validateOptionalField(priceInput, priceValid);
+  validateOptionalField(priceUnitInput, priceUnitValid);
+
+  const allValid =
+    nameValid &&
+    descriptionValid &&
+    availableValid &&
+    priceValid &&
+    priceUnitValid;
 
   setButtonEnabled(createButton, allValid);
   return allValid;
 }
 
 function attachValidation() {
-  const fields = [
-    "resourceName",
-    "resourceDescription",
-    "resourceAvailable",
-    "resourcePrice",
-    "resourcePriceUnit",
+  const nameField = getField("resourceName");
+  const descriptionField = getField("resourceDescription");
+  const optionalFields = [
+    getField("resourceAvailable"),
+    getField("resourcePrice"),
+    getField("resourcePriceUnit"),
   ];
 
-  fields.forEach((id) => {
-    const field = getField(id);
-    if (!field) return;
+  if (nameField) {
+    nameField.addEventListener("input", () => validateForm(true));
+    nameField.addEventListener("blur", () => validateForm(true));
+  }
 
-    field.addEventListener("input", validateForm);
-    field.addEventListener("change", validateForm);
-    field.addEventListener("blur", validateForm);
+  if (descriptionField) {
+    descriptionField.addEventListener("input", () => validateForm(true));
+    descriptionField.addEventListener("blur", () => validateForm(true));
+  }
+
+  optionalFields.forEach((field) => {
+    if (!field) return;
+    field.addEventListener("input", () => validateForm(true));
+    field.addEventListener("change", () => validateForm(true));
+    field.addEventListener("blur", () => validateForm(true));
   });
 
-  validateForm();
+  validateForm(false);
 }
 
 document.addEventListener("DOMContentLoaded", () => {

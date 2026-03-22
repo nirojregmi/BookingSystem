@@ -3,26 +3,15 @@ function $(id) {
 }
 
 function cleanText(value) {
-  return value.trim().replace(/\s+/g, " ");
-}
-
-function isAllowedText(value, min, max) {
-  const cleaned = cleanText(value);
-  const allowedPattern = /^[a-zA-Z0-9äöåÄÖÅ ]+$/;
-
-  return (
-    cleaned.length >= min &&
-    cleaned.length <= max &&
-    allowedPattern.test(cleaned)
-  );
+  return (value ?? "").trim().replace(/\s+/g, " ");
 }
 
 function isNameValid(value) {
-  return isAllowedText(value, 5, 30);
+  return cleanText(value).length > 0;
 }
 
 function isDescriptionValid(value) {
-  return isAllowedText(value, 10, 50);
+  return cleanText(value).length > 0;
 }
 
 function isAvailabilityValid(value) {
@@ -103,10 +92,7 @@ async function onSubmit(event) {
   const payload = getValidatedPayload(actionValue);
 
   if (!payload) {
-    showFormMessage(
-      "Please fix the invalid fields before submitting.",
-      true
-    );
+    showFormMessage("Please fix the invalid fields before submitting.", true);
     return;
   }
 
@@ -125,6 +111,7 @@ async function onSubmit(event) {
 
     const data = await response.json();
     console.log("Server response:", data);
+    console.log("Sent payload:", payload);
 
     showFormMessage("Resource submitted successfully.");
   } catch (error) {
