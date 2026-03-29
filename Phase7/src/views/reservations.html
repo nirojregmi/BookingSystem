@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reservations | Booking System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="border-b border-black/5 bg-white">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/logo.svg" alt="Booking System" class="h-10 w-10" />
+        <div>
+          <div class="text-lg font-bold">Booking System</div>
+          <div class="text-sm text-slate-500">Secure resource booking</div>
+        </div>
+      </a>
+
+      <nav class="flex items-center gap-3 text-sm font-medium">
+        <a href="/" class="rounded-xl px-4 py-2 hover:bg-slate-100">Home</a>
+        <a href="/resources" class="rounded-xl px-4 py-2 hover:bg-slate-100">Resources</a>
+        <a href="/reservations" class="rounded-xl bg-slate-900 px-4 py-2 text-white">Reservations</a>
+        <a href="/register" class="auth-link rounded-xl px-4 py-2 hover:bg-slate-100" data-auth="guest">Register</a>
+        <a href="/login" class="auth-link rounded-xl px-4 py-2 hover:bg-slate-100" data-auth="guest">Sign in</a>
+        <button
+          type="button"
+          onclick="logout()"
+          class="auth-link hidden rounded-xl px-4 py-2 hover:bg-slate-100"
+          data-auth="user"
+        >
+          Sign out
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-6 py-10">
+    <div class="mb-8">
+      <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Reservation management</p>
+      <h1 class="mt-2 text-4xl font-bold tracking-tight">Reservations</h1>
+      <p class="mt-3 max-w-3xl text-slate-600">
+        Create, view, update, and delete reservations.
+      </p>
+    </div>
+
+    <div id="pageMessage" class="hidden mb-6 rounded-2xl border px-4 py-3 text-sm"></div>
+
+    <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <section class="rounded-3xl bg-white p-8 shadow">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold">Reservation form</h2>
+          <p class="mt-2 text-sm text-slate-500">
+            Create a new reservation or load one from the list for editing.
+          </p>
+        </div>
+
+        <form id="reservationForm" class="space-y-6">
+          <input type="hidden" id="reservationId" />
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              <label for="resourceId" class="text-sm font-semibold">Resource ID</label>
+              <input id="resourceId" type="number" min="1" required class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm" />
+            </div>
+
+            <div>
+              <label for="userId" class="text-sm font-semibold">User ID</label>
+              <input id="userId" type="number" min="1" required class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm" />
+            </div>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              <label for="startTime" class="text-sm font-semibold">Start time</label>
+              <input id="startTime" type="datetime-local" required class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm" />
+            </div>
+
+            <div>
+              <label for="endTime" class="text-sm font-semibold">End time</label>
+              <input id="endTime" type="datetime-local" required class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm" />
+            </div>
+          </div>
+
+          <div>
+            <label for="note" class="text-sm font-semibold">Note</label>
+            <textarea id="note" rows="4" class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm"></textarea>
+          </div>
+
+          <div>
+            <label for="status" class="text-sm font-semibold">Status</label>
+            <select id="status" class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm">
+              <option value="active">active</option>
+              <option value="cancelled">cancelled</option>
+              <option value="completed">completed</option>
+            </select>
+          </div>
+
+          <div id="formMessage" class="hidden rounded-2xl border px-4 py-3 text-sm"></div>
+
+          <div class="grid gap-3 sm:grid-cols-4">
+            <button type="submit" class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white">Create</button>
+            <button type="button" id="updateBtn" class="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white">Update</button>
+            <button type="button" id="deleteBtn" class="rounded-2xl bg-rose-600 px-6 py-3 text-sm font-semibold text-white">Delete</button>
+            <button type="button" id="clearBtn" class="rounded-2xl bg-slate-200 px-6 py-3 text-sm font-semibold text-slate-800">Clear</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="rounded-3xl bg-white p-8 shadow">
+        <div class="mb-6 flex items-center justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-bold">Reservation list</h2>
+            <p class="mt-2 text-sm text-slate-500">Click Load to edit a reservation.</p>
+          </div>
+          <button type="button" id="refreshBtn" class="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white">Refresh</button>
+        </div>
+
+        <div id="reservationList" class="space-y-3">
+          <div class="rounded-2xl border border-dashed border-black/10 px-4 py-5 text-sm text-slate-500">
+            Loading reservations...
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/js/reservations.js"></script>
+</body>
+</html>

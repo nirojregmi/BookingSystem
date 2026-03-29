@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resources | Booking System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900">
+  <header class="border-b border-black/5 bg-white">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+      <a href="/" class="flex items-center gap-3">
+        <img src="/logo.svg" alt="Booking System" class="h-10 w-10" />
+        <div>
+          <div class="text-lg font-bold">Booking System</div>
+          <div class="text-sm text-slate-500">Secure resource booking</div>
+        </div>
+      </a>
+
+      <nav class="flex items-center gap-3 text-sm font-medium">
+        <a href="/" class="rounded-xl px-4 py-2 hover:bg-slate-100">Home</a>
+        <a href="/resources" class="rounded-xl bg-slate-900 px-4 py-2 text-white">Resources</a>
+        <a href="/reservations" class="rounded-xl px-4 py-2 hover:bg-slate-100">Reservations</a>
+        <a href="/register" class="auth-link rounded-xl px-4 py-2 hover:bg-slate-100" data-auth="guest">Register</a>
+        <a href="/login" class="auth-link rounded-xl px-4 py-2 hover:bg-slate-100" data-auth="guest">Sign in</a>
+        <button
+          type="button"
+          onclick="logout()"
+          class="auth-link hidden rounded-xl px-4 py-2 hover:bg-slate-100"
+          data-auth="user"
+        >
+          Sign out
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="mx-auto max-w-7xl px-6 py-10">
+    <div class="mb-8">
+      <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">Resource management</p>
+      <h1 class="mt-2 text-4xl font-bold tracking-tight">Resources</h1>
+      <p class="mt-3 max-w-3xl text-slate-600">
+        Create resources for reservations.
+      </p>
+    </div>
+
+    <div class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+      <section class="rounded-3xl bg-white p-8 shadow">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold">Create resource</h2>
+        </div>
+
+        <div id="message" class="hidden"></div>
+
+        <form id="resourceForm" class="mt-6 space-y-6">
+          <div>
+            <label for="resourceName" class="text-sm font-semibold">Resource name</label>
+            <input
+              id="resourceName"
+              name="resourceName"
+              type="text"
+              required
+              class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm"
+              placeholder="Meeting Room A"
+            />
+          </div>
+
+          <div>
+            <label for="resourceDescription" class="text-sm font-semibold">Resource description</label>
+            <textarea
+              id="resourceDescription"
+              name="resourceDescription"
+              rows="4"
+              class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm"
+              placeholder="Small meeting room for team discussions"
+            ></textarea>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <input
+              id="resourceAvailable"
+              name="resourceAvailable"
+              type="checkbox"
+              class="h-4 w-4"
+              checked
+            />
+            <label for="resourceAvailable" class="text-sm font-semibold">Available</label>
+          </div>
+
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              <label for="resourcePrice" class="text-sm font-semibold">Price</label>
+              <input
+                id="resourcePrice"
+                name="resourcePrice"
+                type="number"
+                min="0"
+                step="0.01"
+                required
+                class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm"
+                placeholder="10"
+              />
+            </div>
+
+            <div>
+              <label for="resourcePriceUnit" class="text-sm font-semibold">Price unit</label>
+              <select
+                id="resourcePriceUnit"
+                name="resourcePriceUnit"
+                class="mt-2 w-full rounded-2xl border border-black/10 px-4 py-3 text-sm"
+              >
+                <option value="hour">hour</option>
+                <option value="day">day</option>
+                <option value="week">week</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            class="rounded-2xl bg-slate-900 px-6 py-3 text-sm font-semibold text-white"
+          >
+            Create
+          </button>
+        </form>
+      </section>
+
+      <section class="rounded-3xl bg-white p-8 shadow">
+        <div class="mb-6">
+          <h2 class="text-2xl font-bold">Resource list</h2>
+        </div>
+
+        <div id="resourceList" class="space-y-3">
+          <div class="rounded-2xl border border-dashed border-black/10 px-4 py-5 text-sm text-slate-500">
+            Loading resources...
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script type="module" src="/js/resources.js"></script>
+</body>
+</html>
